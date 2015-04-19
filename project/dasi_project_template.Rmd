@@ -1,6 +1,7 @@
 ---
-title: "project title"
-date: "date"
+title: "Tea Party Support and Family Income"
+author: "Robert C Phillips"
+date: "April 19, 2015"
 output:
   html_document:
     theme: cerulean
@@ -17,20 +18,90 @@ load(url("http://bit.ly/dasi_anes_data"))
 
 ### Introduction:
 
-Insert introduction here...
+Politics can be a devisive topic, especially when it comes to matters related to the influence of money.  The tea party is relatively new faction within the political spectrum.  Much of their platform seems to be based on fiscal issues.
+
+This analysis aims to determine if families with incomes above $50,000 more likely to support the tea party as compared to families with incomes below $50,000?  
 
 ### Data:
 
-Insert data section here...
+THis data was obtained from the American National Elections Study, 2012 Time Series Study Coursera Extract (http://bit.ly/dasi_anes_data)
+
+Excerpt from the ANES web site (http://electionstudies.org/OurStudies/OurStudies.htm).
+
+ANES Time Series studies have been conducted since 1948, typically through in-person interviewing, during years of biennial national elections. Topics cover voting behavior and the elections, together with questions on public opinion and attitudes of the electorate. In all Time Series studies, an interview is completed just after the election (the Post-election or "Post" interview); during years of Presidential elections an interview is also completed just before the election (the Pre-election or "Pre" interview).
+
+Each observation in the dataset is a survey response.  This means the data is a result of an observation study as opposed to an experiment.  The 2 variables from the survey used in this analysis are:
+
+1. Family Income:  This is an ordinal categorical variable named INCGROUP_PREPOST in the data set.
+2. Tea Party support:  This is an ordinal categorical variable named TEA_SUPP_X in the data set.
 
 ### Exploratory data analysis:
 
-Insert exploratory data analysis here...
+The following plots display the overall counts of the data for each category.  Tis shows that there are signficant number of responses for each type, which provides the data needed to perform this analysis.
+
+```{r echo=FALSE}
+library(ggplot2)
+
+p1 <- qplot(incgroup_prepost,data=anes, main="Family Income Counts", xlab="Family Income Levels")
+last_plot() + coord_flip()
+
+p2 <- qplot(tea_supp_x,data=anes, main="Tea Party Support", xlab="Support Levels")
+last_plot() + coord_flip()
+```
+
+This analysis is focused on the proportion of those that have some level of tea party support within the 2 incomes groups of less than $50k and more than $50k.  Therefore the data will be collapsed into these categories. 
+
+```{r echo=FALSE}
+#collapse support levels into 'Support', 'Oppose', and 'None
+library(car)
+anes$tea_supp <- recode(anes$tea_supp_x, "c('Strong Support','Not Very Strong Support','Lean Toward Supporting')='Support';
+                                          c('Strong Opposition','Not Very Strong Opposition','Lean Toward Opposing')='Oppose';
+                                          else='None'")
+
+#collapse income levlses into above $50k and below $50k
+anes$incgroup_above50k <- recode(anes$incgroup_prepost, "c('Under $5,000', '$5,000-$9,999', '$10,000-$12,499', '$12,500-$14,999', '$15,000-$17,499', '$17,500-$19,999', '$20,000-$22,499', '$22,500-$24,999', '$25,000-$27,499', '$27,500-$29,999', '$30,000-$34,999', '$35,000-$39,999', '$40,000-$44,999', '$45,000-$49,999')='Below $50k';else='Above $50k'")
+```
+
+The following plot displays the proportions of collapsed values.
+
+```{r, echo=FALSE}
+plot(anes$incgroup_above50k, anes$tea_supp,xlab="Aggregate Income Level", ylab="Aggregate Support Level")
+```
+
+The following table displays the counts of support for each income level.
+```{r}
+table(anes$incgroup_above50k,anes$tea_supp)
+```
+
+The plot and table show that there are diffences in the type of support for each income level.
 
 ### Inference:
 
-Insert inference section here...
+#### Hypothesis Test
+1. Null Hypothesis: There is no income-based difference in the proportion of people who support the tea party. 
+2. Alternative Hypothesis: There is an income-based difference in the proportion of people who support the tea party.
+
+#### Check Conditions
+1. Independence: The ANES data is collected via a survey of sampled U.S. voters.  Therefore it is reasonable to assume each sample is independent.  The sample size is 5914, which is less than 10% of the U.S. voting population.
+
+2. Sample size / skew: The number of successes and failures for the "Below $50k" income group is 617 and 2501 respectively.  The number of successes and failures for the "Above $50k" income group is 748 and 2048 respectively.  Therefore the number of successes and failures in each income group is greater than 10.
+
+
+#### Estimate different between 2 proportions
+
+```{r, echo=TRUE}
+n1 <- sum(anes$incgroup_above50k == 'Above $50k')
+p1 <- sum(anes[anes$incgroup_above50k == 'Above $50k',]$tea_supp == "Support") / n1
+n2 <- sum(anes$incgroup_above50k == 'Below $50k')
+p2 <- sum(anes[anes$incgroup_above50k == 'Below $50k',]$tea_supp == "Support") / n2
+
+se <- sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2)
+confint <- (p1-p2) + 1.96*se*c(-1,1)
+confint
+```
 
 ### Conclusion:
+The 95% confidence does not include 0, therefore the null hypotheses is rejected and we conclude that there is a difference in tea party support.  Futhermore, the confidence interval contains positive values which indicates that those with income above $50k are more likely to support the tea party. Since this an observational study, the reason for the difference cannot be explained.
 
-Insert conclusion here...
+Regadring genealization and bias in the sample, the ANES data is aimed at the voting population and therefore this result is expected to be generalizable to the voting public, but not the population in general.  However, the data was collected via a lengthy survey, and therefore the information may be biased towards those who are willing to participate in such a survery, who may also be biased in their political opinions.
+
