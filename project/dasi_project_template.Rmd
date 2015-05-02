@@ -18,26 +18,26 @@ load(url("http://bit.ly/dasi_anes_data"))
 
 ### Introduction:
 
-Politics can be a devisive topic, especially when it comes to matters related to the influence of money.  The tea party is relatively new faction within the political spectrum.  Much of their platform seems to be based on fiscal issues.
+Politics can be a devisive topic, especially when it comes to matters related to the influence of money.  The tea party is a relatively new faction within the political spectrum.  Much of their platform seems to be based on fiscal issues.
 
-This analysis aims to determine if families with incomes above $50,000 more likely to support the tea party as compared to families with incomes below $50,000?  
+This analysis aims to determine if families with incomes above $50,000 more likely to support the tea party as compared to families with incomes below $50,000.
 
 ### Data:
 
-THis data was obtained from the American National Elections Study, 2012 Time Series Study Coursera Extract (http://bit.ly/dasi_anes_data)
+This data was obtained from the American National Elections Study, 2012 Time Series Study Coursera Extract (http://bit.ly/dasi_anes_data).
 
-Excerpt from the ANES web site (http://electionstudies.org/OurStudies/OurStudies.htm).
+The following is an excerpt from the ANES web site (http://electionstudies.org/OurStudies/OurStudies.htm).
 
 ANES Time Series studies have been conducted since 1948, typically through in-person interviewing, during years of biennial national elections. Topics cover voting behavior and the elections, together with questions on public opinion and attitudes of the electorate. In all Time Series studies, an interview is completed just after the election (the Post-election or "Post" interview); during years of Presidential elections an interview is also completed just before the election (the Pre-election or "Pre" interview).
 
-Each observation in the dataset is a survey response.  This means the data is a result of an observation study as opposed to an experiment.  The 2 variables from the survey used in this analysis are:
+Each observation in the dataset is a survey response.  This means the data is a result of an observation study as opposed to an experiment.  The two variables from the survey used in this analysis are:
 
 1. Family Income:  This is an ordinal categorical variable named INCGROUP_PREPOST in the data set.
 2. Tea Party support:  This is an ordinal categorical variable named TEA_SUPP_X in the data set.
 
 ### Exploratory data analysis:
 
-The following plots display the overall counts of the data for each category.  Tis shows that there are signficant number of responses for each type, which provides the data needed to perform this analysis.
+The following plots display the overall counts of the data for each category.  This shows that there are a signficant number of responses for each type, which provides the data needed to perform this analysis.
 
 ```{r echo=FALSE}
 library(ggplot2)
@@ -68,12 +68,12 @@ The following plot displays the proportions of collapsed values.
 plot(anes$incgroup_above50k, anes$tea_supp,xlab="Aggregate Income Level", ylab="Aggregate Support Level")
 ```
 
-The following table displays the counts of support for each income level.
+The following table displays the counts of tea party support for each income level.
 ```{r}
 table(anes$incgroup_above50k,anes$tea_supp)
 ```
 
-The plot and table show that there are diffences in the type of support for each income level.
+The plot and table show that there are differnces in the type of tea party support for each income level.
 
 ### Inference:
 
@@ -84,24 +84,29 @@ The plot and table show that there are diffences in the type of support for each
 #### Check Conditions
 1. Independence: The ANES data is collected via a survey of sampled U.S. voters.  Therefore it is reasonable to assume each sample is independent.  The sample size is 5914, which is less than 10% of the U.S. voting population.
 
-2. Sample size / skew: The number of successes and failures for the "Below $50k" income group is 617 and 2501 respectively.  The number of successes and failures for the "Above $50k" income group is 748 and 2048 respectively.  Therefore the number of successes and failures in each income group is greater than 10.
+2. Sample size / skew: The number of successes and failures for the "Below $50k" income group is 617 and 2501 respectively.  The number of successes and failures for the "Above $50k" income group is 748 and 2048 respectively.  Therefore the count of observed successes and failures in each income group is greater than 10.
 
 
-#### Estimate different between 2 proportions
+#### Estimate difference between two proportions
 
 ```{r, echo=TRUE}
+#above 50k income group
 n1 <- sum(anes$incgroup_above50k == 'Above $50k')
 p1 <- sum(anes[anes$incgroup_above50k == 'Above $50k',]$tea_supp == "Support") / n1
+
+#below 50k income group
 n2 <- sum(anes$incgroup_above50k == 'Below $50k')
 p2 <- sum(anes[anes$incgroup_above50k == 'Below $50k',]$tea_supp == "Support") / n2
 
+#standard error
 se <- sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2)
+#95% confidence interval
 confint <- (p1-p2) + 1.96*se*c(-1,1)
 confint
 ```
 
 ### Conclusion:
-The 95% confidence does not include 0, therefore the null hypotheses is rejected and we conclude that there is a difference in tea party support.  Futhermore, the confidence interval contains positive values which indicates that those with income above $50k are more likely to support the tea party. Since this an observational study, the reason for the difference cannot be explained.
+The 95% confidence interval of 4.8% to 9.1%  does not include 0, therefore the null hypotheses is rejected and we conclude that there is a difference in tea party support.  Furthermore, the confidence interval contains positive values which indicates that those with income above $50k are more likely to support the tea party. Since this an observational study, the reason for the difference cannot be explained.
 
-Regadring genealization and bias in the sample, the ANES data is aimed at the voting population and therefore this result is expected to be generalizable to the voting public, but not the population in general.  However, the data was collected via a lengthy survey, and therefore the information may be biased towards those who are willing to participate in such a survery, who may also be biased in their political opinions.
+Regarding generalization and bias in the sample, the ANES data is aimed at the voting population and therefore this result is expected to be generalizable to the overall voting population, but not the U.S. population in general.  However, the data was collected via a lengthy survey, and therefore the information may be biased towards those who are willing to participate in such a survery, who may also be biased in their political opinions.
 
